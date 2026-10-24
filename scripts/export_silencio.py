@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+
 class ExportAdapterError(RuntimeError):
     pass
 
@@ -36,7 +37,7 @@ def export(snapshot: Path, out_dir: Path, spec: dict[str, Any]) -> dict[str, Any
         (out_dir / "upstream-inventory.json").write_text(json.dumps(inventory, indent=2) + "\n")
         raise ExportAdapterError(
             f"Silencio exporter adapter {adapter_name!r} failed. "
-            f"Upstream inventory was written to {out_dir/'upstream-inventory.json'}. "
+            f"Upstream inventory was written to {out_dir / 'upstream-inventory.json'}. "
             "Pin the upstream revision and update scripts/exporters/silencio_current.py "
             "to match its actual tensor contract."
         ) from exc

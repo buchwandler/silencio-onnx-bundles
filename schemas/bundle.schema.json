@@ -26,9 +26,7 @@
     },
     "runtime": {
       "type": "object",
-      "required": [
-        "kind"
-      ]
+      "required": ["kind"]
     },
     "frontend": {
       "type": "object"
@@ -38,12 +36,7 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": [
-          "id",
-          "file",
-          "inputs",
-          "outputs"
-        ]
+        "required": ["id", "file", "inputs", "outputs"]
       }
     }
   }
