@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel", "setuptools_scm[toml]>=8"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["silencio_onnx_bundles*"]
+
+[project]
+name = "silencio-onnx-bundles-tools"
+description = "Build, verify, release and catalog Silencio ONNX bundles"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+dependencies = ["numpy>=1.26"]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+build = [
+  "huggingface-hub>=0.27,<2",
+  "onnx>=1.17",
+  "onnxruntime>=1.20",
+  "torch>=2.6",
+  "soundfile>=0.12",
+]
+test = ["pytest>=8", "jsonschema>=4", "onnx>=1.17"]
+dev = ["pytest>=8", "jsonschema>=4", "onnx>=1.17", "ruff>=0.9", "mypy>=1.13"]
+
+[tool.setuptools_scm]
+write_to = "silencio_onnx_bundles/_version.py"
+fallback_version = "0.0.0"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM"]
+ignore = ["E501"]

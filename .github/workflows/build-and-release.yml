@@ -1,0 +1,77 @@
+name: build-and-release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_key:
+        description: Entry from catalog/releases.json
+        required: true
+        default: silencio-v1
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: silencio-onnx-catalog-v1
+  cancel-in-progress: false
+
+jobs:
+  build-release-catalog:
+    runs-on: ubuntu-latest
+    environment: release
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_REPOSITORY: buchwandler/silencio-onnx-bundles
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+      - name: Build candidate
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: uv run --extra build --extra test python scripts/build_bundle.py "${{ inputs.release_key }}"
+      - name: Resolve candidate
+        id: candidate
+        env:
+          RELEASE_KEY: ${{ inputs.release_key }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          spec=json.loads(Path('catalog/releases.json').read_text())['releases'][os.environ['RELEASE_KEY']]
+          tag=spec['tag']; root=Path('dist')/tag
+          out=Path(os.environ['GITHUB_OUTPUT'])
+          with out.open('a') as f:
+              print(f'tag={tag}',file=f)
+              print(f'candidate={root}',file=f)
+          PY
+      - name: Verify candidate
+        run: uv run --extra test python scripts/verify_candidate.py "${{ steps.candidate.outputs.candidate }}"
+      - name: Publish immutable GitHub release
+        env:
+          TAG: ${{ steps.candidate.outputs.tag }}
+          CANDIDATE: ${{ steps.candidate.outputs.candidate }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" --repo "$RELEASE_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $TAG already exists; refusing to replace immutable assets." >&2
+            exit 1
+          fi
+          gh release create "$TAG" "$CANDIDATE"/*             --repo "$RELEASE_REPOSITORY"             --target "$GITHUB_SHA"             --title "$TAG"             --notes-file "$CANDIDATE/release-notes.md"
+      - name: Synchronize catalog
+        run: python scripts/sync_catalog.py "${{ steps.candidate.outputs.candidate }}"
+      - name: Commit catalog update
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- catalog/models.json; then
+            echo "Catalog already synchronized"
+            exit 0
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add catalog/models.json
+          git commit -m "chore: catalog ${{ steps.candidate.outputs.tag }}"
+          git pull --rebase origin main
+          git push origin HEAD:main

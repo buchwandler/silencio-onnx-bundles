@@ -1,0 +1,3 @@
+This repository contains build tooling. Released model bundles are derived from upstream
+BlueRoseLabs/Silencio and retain upstream provenance and license metadata in each release.
+Review MODEL_LICENSES.md and the release manifest before redistribution.

@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "target_repository": "buchwandler/silencio-onnx-bundles",
+  "releases": {
+    "silencio-v1": {
+      "model_id": "silencio-v1",
+      "tag": "silencio-v1-r1",
+      "model_version": "1",
+      "release_version": 1,
+      "sample_rate": 16000,
+      "license": "Apache-2.0",
+      "redistribution": "allowed",
+      "upstream": {
+        "repo": "BlueRoseLabs/Silencio",
+        "revision": "main"
+      },
+      "frontend": {
+        "kind": "kokorog2p",
+        "language": "en-us",
+        "target_model": "kokoro",
+        "max_tokens": 510,
+        "pad_id": 0
+      },
+      "runtime": {
+        "kind": "silencio-split-v1",
+        "solver_steps": 3,
+        "stream_chunk_ms": 120
+      },
+      "exporter": "silencio-current"
+    }
+  }
+}
