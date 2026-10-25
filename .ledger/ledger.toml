@@ -1,0 +1,18 @@
+schema_version = 3
+
+[project]
+uuid = "1dd36dd9-2133-4605-bccb-ac8ae39ab0e4"
+name = "silencio-onnx-bundles"
+
+[ledgers.taskledger.mounts.data]
+storage = "external"
+root = "../ledger"
+
+[ledgers.taskledger.mounts.runtime]
+storage = "user-data"
+
+[ledgers.taskledger.mounts.logs]
+storage = "user-data"
+
+[ledgers.taskledger.mounts.indexes]
+storage = "cache"

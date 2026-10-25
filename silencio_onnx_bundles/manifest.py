@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -23,3 +24,21 @@ def load_release_spec(path: str | Path, key: str) -> Mapping[str, Any]:
         return data["releases"][key]
     except KeyError as exc:
         raise KeyError(f"Unknown release key: {key}") from exc
+
+
+_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
+
+
+def validate_snapshot_pin(snapshot: Path, spec: Mapping[str, Any]) -> str:
+    """Check that the resolved snapshot matches an immutable release revision."""
+    upstream = spec["upstream"]
+    requested = str(upstream["revision"])
+    resolved = snapshot.name
+
+    if spec.get("redistribution") == "allowed" and not _SHA_RE.fullmatch(requested):
+        raise ValueError("Public release upstream revision must be a full commit hash")
+    if _SHA_RE.fullmatch(requested) and resolved != requested:
+        raise ValueError(
+            f"Resolved upstream revision {resolved} does not match configured pin {requested}"
+        )
+    return resolved

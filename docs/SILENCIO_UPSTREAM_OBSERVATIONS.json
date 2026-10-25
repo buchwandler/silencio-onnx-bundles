@@ -1,0 +1,174 @@
+{
+  "upstream": {
+    "repository": "BlueRoseLabs/Silencio",
+    "requested_revision": "e200e2f9ef1887bb7b878045e0872d79a241f128",
+    "resolved_revision": "e200e2f9ef1887bb7b878045e0872d79a241f128"
+  },
+  "trace": {
+    "device": "cpu",
+    "seed": 20261024,
+    "solver_steps": 3,
+    "input_kind": "Direct valid phoneme strings, bypassing G2P",
+    "method": "scripts/capture_upstream_observations.py forward hooks",
+    "all_recorded_tensors_finite": true
+  },
+  "cases": [
+    {
+      "name": "short_default_voice",
+      "phonemes": "həlˈoʊ.",
+      "voice": "librispeech_6930",
+      "phoneme_tokens_including_boundary_pads": 9,
+      "speaker_embedding": {
+        "dtype": "float32",
+        "shape": [256],
+        "min": -0.3272628784,
+        "max": 0.4903781712,
+        "mean": 0.0039306786
+      },
+      "text_encoder_outputs": {
+        "asr_aligned": {"dtype": "float32", "shape": [1, 512, 45]},
+        "pitch": {"dtype": "float32", "shape": [1, 90]},
+        "loudness": {"dtype": "float32", "shape": [1, 90]}
+      },
+      "adapter_inputs": {
+        "asr": {"dtype": "float32", "shape": [1, 512, 45]},
+        "pitch": {"dtype": "float32", "shape": [1, 90]},
+        "loudness": {"dtype": "float32", "shape": [1, 90]},
+        "out_len": {"dtype": "int64", "shape": [1], "value": 24}
+      },
+      "intermediate_text_tensors": {
+        "duration_state_before_expansion": {"dtype": "float32", "shape": [1, 9, 224]},
+        "duration_lstm_output": {"dtype": "float32", "shape": [1, 9, 192]},
+        "duration_projection": {"dtype": "float32", "shape": [1, 9, 50]},
+        "asr_token_features": {"dtype": "float32", "shape": [1, 9, 512]},
+        "duration_state_after_expansion": {"dtype": "float32", "shape": [1, 45, 224]},
+        "prosody_shared_lstm_output": {"dtype": "float32", "shape": [1, 45, 192]}
+      },
+      "adapter_output": {"dtype": "float32", "shape": [1, 24, 256]},
+      "dit_first_velocity_stats": {
+        "dtype": "float32",
+        "shape": [1, 16, 80],
+        "min": -2.0964050293,
+        "max": 4.4561762810,
+        "mean": 0.9673641920
+      },
+      "dit": {
+        "calls": 24,
+        "chunk_offsets": [0, 12, 24, 36, 48, 60, 72, 84],
+        "input_chunk_lengths": [12, 16],
+        "noise_input": {"dtype": "float32", "shape": [1, 16, 80]},
+        "time_inputs": {"dtype": "float32", "shape": [1]},
+        "layers": 4,
+        "cache_key_and_value_per_layer": {"dtype": "float32", "shape": [1, 2, "cache_frames", 64]},
+        "first_chunk_cache_input": null,
+        "first_chunk_cache_output_frames": 12,
+        "second_chunk_cache_input_frames": 12,
+        "second_chunk_cache_output_frames": 24,
+        "final_chunk_cache_output_frames": 92
+      },
+      "vocos": {
+        "normalized_mel_input": {"dtype": "float32", "shape": [1, 80, 96]},
+        "backbone_output": {"dtype": "float32", "shape": [1, 96, 320]},
+        "waveform_output": {"dtype": "float32", "shape": [1, 15200]},
+        "waveform_finite": true
+      },
+      "render_waveform": {"dtype": "float32", "shape": [15200]}
+    },
+    {
+      "name": "short_alternate_voice",
+      "phonemes": "həlˈoʊ.",
+      "voice": "librispeech_1320",
+      "phoneme_tokens_including_boundary_pads": 9,
+      "speaker_embedding": {
+        "dtype": "float32",
+        "shape": [256],
+        "min": -0.3949600458,
+        "max": 0.4292126596,
+        "mean": -0.0038291498
+      },
+      "text_encoder_outputs": {
+        "asr_aligned": {"dtype": "float32", "shape": [1, 512, 45]},
+        "pitch": {"dtype": "float32", "shape": [1, 90]},
+        "loudness": {"dtype": "float32", "shape": [1, 90]}
+      },
+      "adapter_inputs": {
+        "asr": {"dtype": "float32", "shape": [1, 512, 45]},
+        "pitch": {"dtype": "float32", "shape": [1, 90]},
+        "loudness": {"dtype": "float32", "shape": [1, 90]},
+        "out_len": {"dtype": "int64", "shape": [1], "value": 24}
+      },
+      "adapter_output": {"dtype": "float32", "shape": [1, 24, 256]},
+      "dit_first_velocity_stats": {
+        "dtype": "float32",
+        "shape": [1, 16, 80],
+        "min": -1.9373214245,
+        "max": 4.8577098846,
+        "mean": 1.1022317407
+      },
+      "vocos_normalized_mel_stats": {
+        "dtype": "float32",
+        "shape": [1, 80, 96],
+        "min": -0.0305596590,
+        "max": 0.8885654211,
+        "mean": 0.2856415212
+      },
+      "waveform": {
+        "dtype": "float32",
+        "shape": [15200],
+        "finite": true,
+        "min": -0.5594412088,
+        "max": 0.7276875377,
+        "mean": -0.0001613437
+      }
+    },
+    {
+      "name": "long_alternate_voice",
+      "phonemes": "ðɪs ɪz ə sɪmpəl tɛst.",
+      "voice": "librispeech_1320",
+      "phoneme_tokens_including_boundary_pads": 23,
+      "text_encoder_outputs": {
+        "asr_aligned": {"dtype": "float32", "shape": [1, 512, 79]},
+        "pitch": {"dtype": "float32", "shape": [1, 158]},
+        "loudness": {"dtype": "float32", "shape": [1, 158]}
+      },
+      "adapter_inputs": {
+        "asr": {"dtype": "float32", "shape": [1, 512, 79]},
+        "pitch": {"dtype": "float32", "shape": [1, 158]},
+        "loudness": {"dtype": "float32", "shape": [1, 158]},
+        "out_len": {"dtype": "int64", "shape": [1], "value": 48}
+      },
+      "intermediate_text_tensors": {
+        "duration_state_before_expansion": {"dtype": "float32", "shape": [1, 23, 224]},
+        "duration_lstm_output": {"dtype": "float32", "shape": [1, 23, 192]},
+        "duration_projection": {"dtype": "float32", "shape": [1, 23, 50]},
+        "asr_token_features": {"dtype": "float32", "shape": [1, 23, 512]},
+        "duration_state_after_expansion": {"dtype": "float32", "shape": [1, 79, 224]},
+        "prosody_shared_lstm_output": {"dtype": "float32", "shape": [1, 79, 192]}
+      },
+      "adapter_output": {"dtype": "float32", "shape": [1, 48, 256]},
+      "dit": {
+        "calls": 48,
+        "chunk_offsets": [0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180],
+        "input_chunk_lengths": [12, 16],
+        "layers": 4,
+        "cache_key_and_value_per_layer": {"dtype": "float32", "shape": [1, 2, "cache_frames", 64]},
+        "first_chunk_cache_output_frames": 12,
+        "second_chunk_cache_output_frames": 24,
+        "final_chunk_cache_output_frames": 188
+      },
+      "vocos": {
+        "normalized_mel_input": {"dtype": "float32", "shape": [1, 80, 192]},
+        "backbone_output": {"dtype": "float32", "shape": [1, 192, 320]},
+        "waveform_output": {"dtype": "float32", "shape": [1, 30560]},
+        "waveform_finite": true
+      },
+      "render_waveform": {"dtype": "float32", "shape": [30560]}
+    }
+  ],
+  "interpretation": {
+    "text_length_changes": "9 to 23 phoneme tokens changed aligned text frames from 45 to 79, adapter frames from 24 to 48, DiT calls from 24 to 48, and Vocos samples from 15200 to 30560.",
+    "voice_changes": "For identical short phoneme input, seed and tensor shapes, voice embeddings and first DiT velocity statistics differed between librispeech_6930 and librispeech_1320.",
+    "cache_semantics": "For each chunk, all three solver calls reuse the cache supplied at chunk entry; the final substep cache is retained for the next chunk. Cache grows by 12 frames on full chunks. The final short-window call returns cache length 92 or 188 and it is not reused.",
+    "vocoder_length": "With center-padded Vocos at hop length 160, observed waveform length is 160 times (mel_frames minus 1)."
+  }
+}

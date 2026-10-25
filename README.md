@@ -6,42 +6,27 @@ The name uses **bundles** intentionally: the expected portable runtime is a grou
 
 No `src/` layout is used. The tooling package lives at `silencio_onnx_bundles/`. Tooling versions are derived from Git tags through `setuptools_scm`.
 
-## Release flow
+## Pinned model and bundle contract
 
-`catalog/releases.json` is the build plan. A GitHub Actions release run:
+`catalog/releases.json` pins `silencio-v1` to `BlueRoseLabs/Silencio` commit `e200e2f9ef1887bb7b878045e0872d79a241f128`. The builder checks that the resolved Hugging Face snapshot matches that commit before exporting.
 
-1. resolves the selected release entry;
-2. downloads the pinned/upstream Silencio snapshot;
-3. runs the ONNX exporter adapter;
-4. validates all ONNX files and creates `bundle.json`;
-5. creates an immutable ZIP + SHA256 + release manifest;
-6. publishes a GitHub Release;
-7. synchronizes `catalog/models.json` with the published asset URL and exact digest.
+The bundle contains five ONNX components: `text_encoder`, `text_prosody`, `adapter`, `dit_step`, and `vocos`. Component tensor contracts and native inference evidence are documented in [`docs/SILENCIO_UPSTREAM_CONTRACT.md`](docs/SILENCIO_UPSTREAM_CONTRACT.md). Host-side duration expansion, solver scheduling, chunk/cache orchestration, and exact iSTFT reconstruction remain outside ONNX as specified by that contract.
 
-Run manually from **Actions → build-and-release**.
+Each candidate contains `bundle.json`, the passing `parity-report.json`, required license notices, component hashes and sizes, and upstream provenance. Build-time checkpoints and unlisted files are rejected. The verifier checks archive paths and integrity, exact inventory, ONNX contracts and ONNX Runtime CPU loading, parity, licensing, and provenance.
 
-## First required engineering task
+## Local build and verification
 
-The workflow and artifact contract are complete, but `scripts/export_silencio.py` deliberately does **not** guess internal Silencio tensor contracts. It discovers the current upstream source layout and then calls a pinned adapter. The included adapter emits a precise error showing what it found until the first Silencio graph contract is implemented.
-
-This is intentional: the current Silencio implementation contains Python-side duration expansion, iterative DiT scheduling/cache logic, and Vocos/iSTFT behavior that should be made explicit instead of silently traced into brittle graphs.
-
-Recommended first contract:
-
-- `text_encoder.onnx`
-- `adapter.onnx`
-- `dit_step.onnx` (one solver step, explicit cache inputs/outputs)
-- `vocos.onnx` (or Vocos spectral output + host iSTFT)
-
-The host runtime (`silenciosynth`) should own sentence/chunk scheduling, the three-step solver, G2P, and any host iSTFT.
-
-## Local commands
+Run these commands from the repository root. They build and verify a local candidate only. They do not publish a release.
 
 ```bash
-python -m pip install -e ".[build,test]"
-python scripts/inspect_upstream.py --repo BlueRoseLabs/Silencio --revision main
-python scripts/build_bundle.py silencio-v1
-python scripts/verify_candidate.py dist/silencio-v1-r1
+uv run --extra build --extra test python scripts/build_bundle.py silencio-v1
+uv run --extra test python scripts/verify_candidate.py dist/silencio-v1-r1
+uv run --extra test python -m pytest -q
+uv run --extra dev ruff check .
 ```
 
-Before the first public release, replace `main` in `catalog/releases.json` with an exact upstream commit when possible. The build manifest always records the resolved Hugging Face snapshot revision.
+The candidate directory is `dist/silencio-v1-r1`. It contains the bundle directory, ZIP archive, release manifest, release notes, and `SHA256SUMS`. The build requires access to the pinned Hugging Face snapshot.
+
+## Release flow
+
+The GitHub Actions release workflow is started manually from **Actions → build-and-release**. Before publication, it runs the test and lint gates, builds the catalog-selected candidate, and invokes the strict candidate verifier. Only that explicitly dispatched workflow proceeds to publish an immutable GitHub Release and synchronize `catalog/models.json`. Local build and verification commands never publish.

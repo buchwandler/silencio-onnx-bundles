@@ -28,6 +28,10 @@ jobs:
         with:
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v6
+      - name: Run tests and lint
+        run: |
+          uv run --extra test python -m pytest -q
+          uv run --extra dev ruff check .
       - name: Build candidate
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
@@ -59,7 +63,14 @@ jobs:
             echo "Release $TAG already exists; refusing to replace immutable assets." >&2
             exit 1
           fi
-          gh release create "$TAG" "$CANDIDATE"/*             --repo "$RELEASE_REPOSITORY"             --target "$GITHUB_SHA"             --title "$TAG"             --notes-file "$CANDIDATE/release-notes.md"
+          gh release create "$TAG" \
+            "$CANDIDATE/$TAG.zip" \
+            "$CANDIDATE/release-manifest.json" \
+            "$CANDIDATE/SHA256SUMS" \
+            --repo "$RELEASE_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "$TAG" \
+            --notes-file "$CANDIDATE/release-notes.md"
       - name: Synchronize catalog
         run: python scripts/sync_catalog.py "${{ steps.candidate.outputs.candidate }}"
       - name: Commit catalog update

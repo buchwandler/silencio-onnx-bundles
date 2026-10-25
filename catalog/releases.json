@@ -12,7 +12,7 @@
       "redistribution": "allowed",
       "upstream": {
         "repo": "BlueRoseLabs/Silencio",
-        "revision": "main"
+        "revision": "e200e2f9ef1887bb7b878045e0872d79a241f128"
       },
       "frontend": {
         "kind": "kokorog2p",

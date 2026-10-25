@@ -1,43 +1,396 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Silencio ONNX bundle metadata",
   "type": "object",
+  "additionalProperties": false,
   "required": [
     "schema",
+    "abi",
     "model_id",
     "version",
     "sample_rate",
-    "runtime",
     "frontend",
-    "components"
+    "runtime",
+    "runtime_semantics",
+    "components",
+    "assets",
+    "parity",
+    "provenance",
+    "license",
+    "licensing"
   ],
   "properties": {
-    "schema": {
-      "const": 1
-    },
-    "model_id": {
-      "type": "string"
-    },
-    "version": {
-      "type": "string"
-    },
-    "sample_rate": {
-      "type": "integer",
-      "minimum": 1
-    },
-    "runtime": {
-      "type": "object",
-      "required": ["kind"]
-    },
-    "frontend": {
-      "type": "object"
-    },
+    "schema": {"const": 2},
+    "abi": {"$ref": "#/$defs/abi"},
+    "model_id": {"type": "string", "minLength": 1},
+    "version": {"type": "string", "minLength": 1},
+    "sample_rate": {"type": "integer", "minimum": 1},
+    "frontend": {"type": "object"},
+    "runtime": {"type": "object"},
+    "runtime_semantics": {"$ref": "#/$defs/runtimeSemantics"},
     "components": {
       "type": "array",
-      "minItems": 1,
-      "items": {
-        "type": "object",
-        "required": ["id", "file", "inputs", "outputs"]
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {"$ref": "#/$defs/component"}
+    },
+    "assets": {
+      "type": "array",
+      "minItems": 4,
+      "items": {"$ref": "#/$defs/asset"}
+    },
+    "parity": {"$ref": "#/$defs/parity"},
+    "provenance": {"$ref": "#/$defs/provenance"},
+    "license": {"type": "string", "minLength": 1},
+    "licensing": {"$ref": "#/$defs/licensing"}
+  },
+  "$defs": {
+    "tensor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dtype", "shape"],
+      "properties": {
+        "dtype": {"enum": ["float32", "int64", "bool"]},
+        "shape": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {"type": "integer", "minimum": 0},
+              {"type": "string", "minLength": 1}
+            ]
+          }
+        }
       }
-    }
+    },
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_abs_error", "mean_abs_error"],
+      "properties": {
+        "max_abs_error": {"type": "number", "minimum": 0},
+        "mean_abs_error": {"type": "number", "minimum": 0}
+      }
+    },
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "file",
+        "opset",
+        "sha256",
+        "size",
+        "inputs",
+        "outputs",
+        "dynamic_axes",
+        "probe_parity"
+      ],
+      "properties": {
+        "id": {
+          "enum": ["text_encoder", "text_prosody", "adapter", "dit_step", "vocos"]
+        },
+        "file": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+\\.onnx$"},
+        "opset": {"type": "integer", "minimum": 1},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "size": {"type": "integer", "minimum": 1},
+        "inputs": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {"$ref": "#/$defs/tensor"}
+        },
+        "outputs": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {"$ref": "#/$defs/tensor"}
+        },
+        "dynamic_axes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {"type": "string", "minLength": 1}
+          }
+        },
+        "probe_parity": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {"$ref": "#/$defs/metric"}
+        }
+      }
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "kind", "sha256", "size"],
+      "properties": {
+        "file": {"type": "string", "minLength": 1},
+        "kind": {
+          "enum": ["parity_report", "license_notice", "upstream_license_notice"]
+        },
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "size": {"type": "integer", "minimum": 1}
+      }
+    },
+    "abi": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "component_order", "cache"],
+      "properties": {
+        "version": {"const": 1},
+        "component_order": {
+          "const": ["text_encoder", "text_prosody", "adapter", "dit_step", "vocos"]
+        },
+        "cache": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "version",
+            "layers",
+            "heads",
+            "head_dim",
+            "initial_frames",
+            "input_names",
+            "output_names"
+          ],
+          "properties": {
+            "version": {"type": "integer", "minimum": 1},
+            "layers": {"type": "integer", "minimum": 1},
+            "heads": {"type": "integer", "minimum": 1},
+            "head_dim": {"type": "integer", "minimum": 1},
+            "initial_frames": {"const": 0},
+            "input_names": {"type": "array", "items": {"type": "string"}},
+            "output_names": {"type": "array", "items": {"type": "string"}}
+          }
+        }
+      }
+    },
+    "runtimeSemantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "batch_size",
+        "dit",
+        "cache_semantics",
+        "duration_expansion",
+        "bnf_alignment",
+        "condition_interpolation",
+        "solver",
+        "chunking",
+        "mel_scaling",
+        "speaker_embedding",
+        "vocos"
+      ],
+      "properties": {
+        "batch_size": {"const": 1},
+        "dit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["dimension", "layers", "heads", "mel_channels"],
+          "properties": {
+            "dimension": {"type": "integer", "minimum": 1},
+            "layers": {"type": "integer", "minimum": 1},
+            "heads": {"type": "integer", "minimum": 1},
+            "mel_channels": {"type": "integer", "minimum": 1}
+          }
+        },
+        "cache_semantics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "initial_frames",
+            "updated_frames",
+            "trim_trailing_lookahead_frames",
+            "reuse_chunk_entry_cache_for_solver_substeps",
+            "persist_final_substep_cache"
+          ],
+          "properties": {
+            "initial_frames": {"const": 0},
+            "updated_frames": {"type": "string"},
+            "trim_trailing_lookahead_frames": {"type": "integer", "minimum": 0},
+            "reuse_chunk_entry_cache_for_solver_substeps": {"type": "boolean"},
+            "persist_final_substep_cache": {"type": "boolean"}
+          }
+        },
+        "duration_expansion": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["rounding", "minimum_frames_per_token", "operation"],
+          "properties": {
+            "rounding": {"type": "string"},
+            "minimum_frames_per_token": {"const": 1},
+            "operation": {"type": "string"}
+          }
+        },
+        "bnf_alignment": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "text_frames_per_second",
+            "sample_rate",
+            "fbank_n_fft",
+            "fbank_hop_length",
+            "minimum_fbank_frames",
+            "subsampling_factor",
+            "formula"
+          ],
+          "properties": {
+            "text_frames_per_second": {"type": "integer", "minimum": 1},
+            "sample_rate": {"type": "integer", "minimum": 1},
+            "fbank_n_fft": {"type": "integer", "minimum": 1},
+            "fbank_hop_length": {"type": "integer", "minimum": 1},
+            "minimum_fbank_frames": {"type": "integer", "minimum": 1},
+            "subsampling_factor": {"type": "integer", "minimum": 1},
+            "formula": {"type": "string"}
+          }
+        },
+        "condition_interpolation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["factor", "mode", "align_corners"],
+          "properties": {
+            "factor": {"type": "integer", "minimum": 1},
+            "mode": {"const": "linear"},
+            "align_corners": {"type": "boolean"}
+          }
+        },
+        "solver": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["method", "steps", "schedule", "update", "noise"],
+          "properties": {
+            "method": {"const": "Euler"},
+            "steps": {"type": "integer", "minimum": 1},
+            "schedule": {"type": "string"},
+            "update": {"type": "string"},
+            "noise": {"type": "string"}
+          }
+        },
+        "chunking": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "chunk_size",
+            "lookahead_frames",
+            "reuse_chunk_entry_cache_for_solver_substeps",
+            "persist_final_substep_cache",
+            "reset_cache_each_utterance"
+          ],
+          "properties": {
+            "chunk_size": {"type": "integer", "minimum": 1},
+            "lookahead_frames": {"type": "integer", "minimum": 0},
+            "reuse_chunk_entry_cache_for_solver_substeps": {"type": "boolean"},
+            "persist_final_substep_cache": {"type": "boolean"},
+            "reset_cache_each_utterance": {"type": "boolean"}
+          }
+        },
+        "mel_scaling": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["operation", "clamp"],
+          "properties": {
+            "operation": {"type": "string"},
+            "clamp": {"type": "boolean"}
+          }
+        },
+        "speaker_embedding": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["dimension", "default_voice", "raw_audio_enrollment_in_bundle"],
+          "properties": {
+            "dimension": {"const": 256},
+            "default_voice": {"type": "string"},
+            "raw_audio_enrollment_in_bundle": {"const": false}
+          }
+        },
+        "vocos": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mel_channels", "layers", "backbone_dimension", "spectrum_bins", "magnitude_transform", "istft"],
+          "properties": {
+            "mel_channels": {"type": "integer", "minimum": 1},
+            "layers": {"type": "integer", "minimum": 1},
+            "backbone_dimension": {"type": "integer", "minimum": 1},
+            "spectrum_bins": {"type": "integer", "minimum": 1},
+            "magnitude_transform": {"type": "string"},
+            "istft": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "n_fft",
+                "win_length",
+                "hop_length",
+                "window",
+                "center",
+                "normalized",
+                "onesided",
+                "window_envelope",
+                "minimum_window_envelope",
+                "output_trim",
+                "output_samples"
+              ],
+              "properties": {
+                "n_fft": {"type": "integer", "minimum": 2},
+                "win_length": {"type": "integer", "minimum": 2},
+                "hop_length": {"type": "integer", "minimum": 1},
+                "window": {"type": "string"},
+                "center": {"type": "boolean"},
+                "normalized": {"type": "boolean"},
+                "onesided": {"type": "boolean"},
+                "window_envelope": {"type": "string"},
+                "minimum_window_envelope": {"type": "number", "exclusiveMinimum": 0},
+                "output_trim": {"type": "string"},
+                "output_samples": {"type": "string"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "parity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "status", "consumer_determinism", "sha256", "size"],
+      "properties": {
+        "file": {"const": "parity-report.json"},
+        "status": {"const": "passed"},
+        "consumer_determinism": {"const": "passed"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "size": {"type": "integer", "minimum": 1}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "requested_revision",
+        "resolved_revision",
+        "exporter",
+        "upstream_notice_files"
+      ],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "requested_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "resolved_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "exporter": {"type": "string", "minLength": 1},
+        "upstream_notice_files": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "licensing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spdx", "redistribution", "notice_files", "upstream_notice_files"],
+      "properties": {
+        "spdx": {"type": "string", "minLength": 1},
+        "redistribution": {"enum": ["allowed", "restricted", "denied"]},
+        "notice_files": {
+          "type": "array",
+          "minItems": 3,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "upstream_notice_files": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
   }
 }
